@@ -15,5 +15,13 @@ func HandleRequest(log *slog.Logger, serverPool core.ServerPool) http.HandlerFun
 			return
 		}
 		http.Error(writer, "Service not available", http.StatusServiceUnavailable)
+		log.Error(
+			"Backend failure",
+			slog.Group("context",
+				"error", "no available servers",
+				"action", "retrying in 5s",
+				"backends_count", 0,
+			),
+		)
 	}
 }

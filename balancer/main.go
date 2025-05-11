@@ -27,17 +27,25 @@ func main() {
 
 	log.Info("starting server")
 	log.Debug("debug messages are enabled")
-	serverPool := core.ServerPool{}
+
+	serverPool := core.NewServerPool(log)
+
+	addresses := []string{
+		cfg.HelloConfig.FirstAddress,
+		cfg.HelloConfig.SecondAddress,
+		cfg.HelloConfig.ThirdAddress,
+	}
+
+	for _, addr := range addresses {
+		serverPool.AddBackand(addr)
+	}
 
 	go healthCheck(serverPool)
-
-	mux := http.NewServeMux()
-	mux.Handle("/", middleware.Concurrency(rest.HandleRequest(log, serverPool), int64(cfg.Concurrency)))
 
 	server := http.Server{
 		Addr:        cfg.HTTPConfig.Address,
 		ReadTimeout: cfg.HTTPConfig.Timeout,
-		Handler:     mux,
+		Handler:     middleware.Concurrency(rest.HandleRequest(log, *serverPool), int64(cfg.Concurrency)),
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -76,7 +84,7 @@ func mustMakeLogger(logLevel string) *slog.Logger {
 	return slog.New(handler)
 }
 
-func healthCheck(serverPool core.ServerPool) {
+func healthCheck(serverPool *core.ServerPool) {
 	t := time.NewTicker(time.Second * 20)
 	for {
 		select {

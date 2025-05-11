@@ -1,0 +1,5 @@
+log_level: DEBUG
+concurrency: 10
+balancer:
+  address: localhost:81
+  timeout: 5s

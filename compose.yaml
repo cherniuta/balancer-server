@@ -1,0 +1,69 @@
+services:
+
+  balancer:
+    image: balancer:latest
+    build:
+      context: balancer-services
+      dockerfile: Dockerfile.balancer
+    container_name: balancer
+    restart: on-failure:5
+    ports:
+      - 28080:8081
+    volumes:
+      - ./balancer-services/balancer/config.yaml:/config.yaml
+    environment:
+      - BALANCER_ADDRESS=:8081
+      - LOG
+      - BALANCER_TIMEOUT=5s
+      - FIRST_ADDRESS=hello:8082
+      - SECOND_ADDRESS=hello2:8083
+      - THIRD_ADDRESS=hello3:8084
+      - CONCURRENCY=10
+      - RATE_LIMIT=3
+      - RATE_TIME=30s
+    depends_on:
+      - hello
+      - hello2
+      - hello3
+
+  hello:
+    image: hello:latest
+    build:
+      context: balancer-services
+      dockerfile: Dockerfile.hello
+    container_name: hello
+    restart: on-failure:5
+    ports:
+      - 28081:8082
+    volumes:
+      - ./balancer-services/hello/config.yaml:/config.yaml
+    environment:
+      - HELLO_ADDRESS=:8082
+
+  hello2:
+    image: hello2:latest
+    build:
+      context: balancer-services
+      dockerfile: Dockerfile.hello
+    container_name: hello2
+    restart: on-failure:5
+    ports:
+      - "28082:8083"
+    volumes:
+      - ./balancer-services/hello/config-hello2.yaml:/config.yaml
+    environment:
+      - HELLO_ADDRESS=:8083
+
+  hello3:
+    image: hello3:latest
+    build:
+      context: balancer-services
+      dockerfile: Dockerfile.hello
+    container_name: hello3
+    restart: on-failure:5
+    ports:
+      - "28083:8084"
+    volumes:
+      - ./balancer-services/hello/config-hello3.yaml:/config.yaml
+    environment:
+      - HELLO_ADDRESS=:8084

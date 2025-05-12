@@ -1,0 +1,11 @@
+log_level: DEBUG
+concurrency: 10
+rate_limit: 3
+rate_time: 60s
+balancer:
+  address: localhost:81
+  timeout: 20s
+hello:
+  first_address: localhost:82
+  second_address: localhost:83
+  third_address: localhost:84

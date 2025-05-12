@@ -1,0 +1,14 @@
+FROM golang:1.23 AS build
+
+ENV CGO_ENABLED=0
+WORKDIR /src
+COPY go.mod go.sum ./
+COPY hello ./hello
+
+RUN cd /src && go build -o /hello ./hello/main.go
+
+FROM alpine:3.20
+
+COPY --from=build /hello /hello
+
+ENTRYPOINT [ "/hello" ]
